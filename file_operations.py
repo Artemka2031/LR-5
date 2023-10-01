@@ -18,14 +18,37 @@ class File_operations:
 
                 # Проверяем, существует ли файл перед созданием
                 if not file_path.exists():
-                    with open(file_path, "w") as file:
+                    with open(file_path, "w", encoding='UTF-8') as file:
                         # Записываем в файл текст
                         file.write(category_text)
 
-    def get_to_sort_files(self):
-        # Используем генератор списка для получения путей ко всем файлам в папке to_sort
-        return [file for file in self.to_sort.iterdir() if file.is_file()]
+    def get_to_sort_files(self, keyword_dict: dict):
 
+        if not self.sorted.exists():
+            self.sorted.mkdir()
 
+            # Create folders based on keyword_dict values
+
+        # Create folders based on keyword_dict values
+        for category in keyword_dict.keys():
+            category_folder = self.sorted / category
+            if not category_folder.exists():
+                category_folder.mkdir()
+
+        # Iterate through the files in the "To_sort_docs" directory
+        for file_path in self.to_sort.iterdir():
+            if file_path.is_file():
+                # Get the filename without extension (the stem)
+                filename_without_extension = file_path.stem
+
+                # Iterate through the keyword_dict to find matching keywords
+                for keyword, category_array in keyword_dict.items():
+                    sorted_path = self.sorted / keyword / file_path.name
+                    if any(keyword in filename_without_extension for keyword in category_array):
+                        # Check if the file still exists before moving it
+                        if file_path.exists():
+                            for category in keyword_dict.keys():
+                                file_path.rename(sorted_path)
+                                break
 
 operations = File_operations()
